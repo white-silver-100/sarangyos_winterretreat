@@ -14,6 +14,7 @@
 <style>
   :root { --accent: #1F4FD8; --ink: #141B24; --sub: #4A5563; --line: #C9D0D8; --bg: #F3F5F7; }
   * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
   html, body { margin: 0; background: var(--bg); color: var(--ink); font-family: 'Noto Sans KR', system-ui, sans-serif; -webkit-text-size-adjust: 100%; }
   main { max-width: 480px; margin: 0 auto; min-height: 100dvh; display: flex; flex-direction: column; padding-bottom: env(safe-area-inset-bottom); }
   .hero { background: var(--accent); color: #fff; padding: 56px 24px 28px; display: flex; flex-direction: column; gap: 8px; }
@@ -110,9 +111,9 @@ async function demoApi(action, d) {
     const dup = db.rows.find(r => r.phone === ph && nm(r.name) === nm(d.name));
     if (dup) return { status: 'exists', ...pub(dup), tier: dup.tier, amount: dup.amount, due: dup.due, ...acct(dup.guk) };
     const S = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; let code = ''; for (let i = 0; i < 8; i++) code += S[Math.floor(Math.random() * S.length)];
-    const r = { guk: d.guk, ddorae: d.ddorae, name: String(d.name).trim(), leader: d.leader, phone: ph, tier: '1차', amount: 40000, due: '2026-12-14', paid: false, code: code, days: ['', '', '', ''] };
+    const lead = d.isLeader === true; const r = { guk: d.guk, ddorae: d.ddorae, name: String(d.name).trim(), role: lead ? '리더' : '조원', leader: lead ? '' : d.leader, phone: ph, tier: '1차', amount: d.guk === 'BSC' ? (lead ? 30000 : 35000) : 40000, due: '2026-12-14', paid: false, code: code, days: ['', '', '', ''] };
     db.rows.push(r); demoSave(db);
-    return { status: 'ok', guk: r.guk, name: r.name, ddorae: r.ddorae, tier: r.tier, amount: r.amount, due: r.due, ...acct(r.guk) };
+    return { status: 'ok', guk: r.guk, name: r.name, ddorae: r.ddorae, role: r.role, tier: r.tier, amount: r.amount, due: r.due, ...acct(r.guk) };
   }
   if (action === 'lookup') {
     let m = db.rows.filter(r => nm(r.name) === nm(d.name) && r.phone.slice(-4) === dg(d.last4));
@@ -218,7 +219,8 @@ function register() {
         <label class="f">또래<select name="ddorae" required><option value="">선택</option>${opt(CFG.ddorae)}</select></label>
       </div>
       <label class="f">이름<input type="text" name="name" autocomplete="name" required></label>
-      <label class="f">리더 이름 <span class="hint" style="display:inline">(리더일 경우 본인 이름)</span><input type="text" name="leader" required></label>
+      <label class="agree" style="font-size:15px;font-weight:700;color:#141B24;align-items:center"><input type="checkbox" name="isLeader" onchange="toggleLeader(this.checked)"><span>리더예요</span></label>
+      <label class="f" id="leaderField">리더 이름<input type="text" name="leader"><span class="hint">조원은 소속 조의 리더 이름을 적어 주세요.</span></label>
       <label class="f">연락처<input type="tel" name="phone" inputmode="numeric" placeholder="010-0000-0000" autocomplete="tel" required>
         <span class="hint">QR을 받을 때 뒷자리 4자리로 본인 확인을 해요.</span></label>
       <label class="agree"><input type="checkbox" name="agree"><span>입력한 정보를 사경회 접수·회비 확인·출석 체크에만 쓰는 데 동의합니다.</span></label>
@@ -227,12 +229,23 @@ function register() {
     <div class="foot"><button class="btn" id="b" onclick="submitReg()">등록하기</button></div>`;
 }
 
+function toggleLeader(on) {
+  const el = document.getElementById('leaderField');
+  if (!el) return;
+  el.hidden = on;
+  el.style.display = on ? 'none' : '';
+  if (on) el.querySelector('input').value = '';
+}
+
 async function submitReg() {
   const f = document.getElementById('f'), b = document.getElementById('b');
   const d = Object.fromEntries(new FormData(f).entries());
   d.agree = f.querySelector('[name=agree]').checked;
   if (!d.guk || !d.ddorae) return showErr('e', '국과 또래를 선택해 주세요.');
-  if (!d.name || !d.leader) return showErr('e', '이름과 리더 이름을 적어 주세요.');
+  d.isLeader = f.querySelector('[name=isLeader]').checked;
+  if (d.isLeader) d.leader = '';
+  if (!d.name) return showErr('e', '이름을 적어 주세요.');
+  if (!d.isLeader && !d.leader) return showErr('e', '리더 이름을 적어 주세요. 리더라면 \'리더예요\'에 체크해 주세요.');
   if ((d.phone || '').replace(/\D/g, '').length < 10) return showErr('e', '연락처를 다시 확인해 주세요.');
   if (!d.agree) return showErr('e', '개인정보 이용에 동의해 주세요.');
   showErr('e', '');
@@ -247,22 +260,24 @@ async function submitReg() {
   setBusy(b, false, '등록하기');
 }
 
+function payTo(r) { return r.payTo || r.guk; }
+
 function payCard(r) {
   return `
     <div class="card">
       <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px">
-        <div style="display:flex;flex-direction:column;gap:6px"><span class="muted">${esc(r.guk)} 회비</span>
-          ${r.tier ? `<span class="chip">${esc(r.tier)} 접수${r.due ? ' · ' + md(r.due) + '까지 입금' : ''}</span>` : ''}</div>
+        <div style="display:flex;flex-direction:column;gap:6px"><span class="muted">${r.onsite ? '현장등록 회비' : esc(r.guk) + ' 회비'}</span>
+          ${r.tier ? `<span class="chip">${esc(r.tier)}${/현장/.test(r.tier) ? '' : ' 접수'}${r.due ? ' · ' + md(r.due) + '까지 입금' : ''}</span>` : ''}</div>
         <b style="font-size:22px">${won(r.amount)}</b>
       </div>
       ${r.account ? `<div class="acct">
         <div style="display:flex;flex-direction:column;gap:2px;min-width:0">
-          <span class="muted" style="font-size:13px">${esc(r.guk)} 계좌 · ${esc(r.bank)} · 예금주 ${esc(r.holder)}</span>
+          <span class="muted" style="font-size:13px">${esc(payTo(r))} 계좌 · ${esc(r.bank)} · 예금주 ${esc(r.holder)}</span>
           <b>${esc(r.account)}</b>
         </div>
         <button class="copy" onclick="copyText('${esc(String(r.account).replace(/[^\d-]/g, ''))}')">복사</button>
-      </div>` : `<div class="acct"><span class="muted">${esc(r.guk)} 입금 계좌는 ${esc(r.guk)} 회계에게 문의해 주세요.</span></div>`}
-      <div style="font-size:13px;line-height:1.6;color:#2E3742">${r.due ? '<b>' + md(r.due) + '</b>까지 입금해 주세요. ' : ''}입금자명은 <b>본인 이름</b>으로, 다른 이름으로 보냈다면 ${esc(r.guk)} 회계에게 알려 주세요.</div>
+      </div>` : `<div class="acct"><span class="muted">입금 계좌는 ${esc(payTo(r))} 회계에게 문의해 주세요.</span></div>`}
+      <div style="font-size:13px;line-height:1.6;color:#2E3742">${r.due ? '<b>' + md(r.due) + '</b>까지 입금해 주세요. ' : ''}입금자명은 <b>본인 이름</b>으로, 다른 이름으로 보냈다면 ${esc(payTo(r))} 회계에게 알려 주세요.</div>
     </div>`;
 }
 
@@ -272,12 +287,12 @@ function done(r) {
     <div class="center">
       <div class="icon" style="background:#E3F5EC"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#0B5C3C" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></div>
       <h1>${exists ? '이미 등록돼 있어요' : '등록됐어요'}</h1>
-      <p class="muted">${exists && r.paid ? '회비 확인도 끝났어요. 내 QR을 받아 가세요.' : '아래 계좌로 회비를 보내 주세요.<br>' + esc(r.guk) + ' 회계가 확인하면 QR을 받을 수 있어요.'}</p>
+      <p class="muted">${exists && r.paid ? '회비 확인도 끝났어요. 내 QR을 받아 가세요.' : '아래 계좌로 회비를 보내 주세요.<br>' + esc(payTo(r)) + ' 회계가 확인하면 QR을 받을 수 있어요.'}</p>
     </div>
     ${exists && r.paid ? '' : payCard(r)}
     <div class="card" style="margin-top:14px;padding:6px 20px;gap:0">
       <div class="kv"><span>국 · 또래</span><span>${esc(r.guk)} · ${esc(r.ddorae)}</span></div>
-      <div class="kv"><span>이름</span><span>${esc(r.name)}</span></div>
+      <div class="kv"><span>이름</span><span>${esc(r.name)}${r.role ? ' · ' + esc(r.role) : ''}</span></div>
     </div>
     <div class="foot">
       <button class="btn" onclick="go('lookup')">${exists && r.paid ? '내 QR 받기' : '입금했어요 · 내 QR 확인하기'}</button>
@@ -318,6 +333,7 @@ async function submitLookup() {
     const r = await api('lookup', d);
     if (r.status === 'ok') return showQR(r);
     if (r.status === 'pending') return pending(r);
+    if (r.status === 'refunded') return refunded(r);
     if (r.status === 'notfound') return notfound();
     if (r.status === 'multiple') return lookup({ multiple: true, name: d.name, last4: d.last4 });
     showErr('e', r.message || '확인하지 못했어요. 잠시 뒤 다시 시도해 주세요.');
@@ -332,7 +348,7 @@ function pending(r) {
     <div class="center">
       <div class="icon" style="background:#FFF1D6"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#8A4B00" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg></div>
       <h1>등록은 확인됐어요<br>회비 확인을 기다리는 중이에요</h1>
-      <p class="muted">${esc(r.guk)} 회계가 입금을 확인하면 이 페이지에서 바로 QR을 받을 수 있어요.</p>
+      <p class="muted">${esc(payTo(r))} 회계가 입금을 확인하면 이 페이지에서 바로 QR을 받을 수 있어요.</p>
     </div>
     <div class="card" style="padding:6px 20px;gap:0">
       <div class="kv"><span>이름</span><span>${esc(r.name)}</span></div>
@@ -344,6 +360,17 @@ function pending(r) {
     <div class="foot">
       ${DEMO && r.demoCode ? `<button class="btn" onclick="demoApi('demoPay',{code:'${esc(r.demoCode)}'}).then(()=>go('lookup'))">미리보기: 회계가 확인했다고 치기</button>` : ''}
       <button class="btn ghost" onclick="go('home')">처음으로</button></div>`;
+}
+
+function refunded(r) {
+  try { const s = loadSaved(); if (s && s.name === r.name) localStorage.removeItem(SAVE_KEY); } catch (e) {}
+  app.innerHTML = `${topBar('lookup')}
+    <div class="center">
+      <div class="icon" style="background:#E6EAEE"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#4A5563" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M7 17L17 7"/></svg></div>
+      <h1>환불 처리된 등록이에요</h1>
+      <p class="muted">${esc(r.name)} · ${esc(r.guk)} · ${esc(r.ddorae)}<br>이 등록의 QR은 사용할 수 없어요. 잘못 처리된 것 같다면 운영 데스크에 문의해 주세요.</p>
+    </div>
+    <div class="foot"><button class="btn ghost" onclick="go('home')">처음으로</button></div>`;
 }
 
 function notfound() {
