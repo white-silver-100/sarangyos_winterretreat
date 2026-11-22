@@ -1,0 +1,425 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>청년부 수양회</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;800&display=swap">
+<script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
+<style>
+  :root { --accent: #1F4FD8; --ink: #141B24; --sub: #4A5563; --line: #C9D0D8; --bg: #F3F5F7; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); color: var(--ink); font-family: 'Noto Sans KR', system-ui, sans-serif; -webkit-text-size-adjust: 100%; }
+  main { max-width: 480px; margin: 0 auto; min-height: 100dvh; display: flex; flex-direction: column; padding-bottom: env(safe-area-inset-bottom); }
+  .hero { background: var(--accent); color: #fff; padding: 56px 24px 28px; display: flex; flex-direction: column; gap: 8px; }
+  .hero small { font-size: 13px; font-weight: 700; letter-spacing: .04em; }
+  .hero h1 { margin: 0; font-size: 28px; line-height: 1.3; font-weight: 800; }
+  .top { padding: 12px 12px 0; }
+  .back { width: 44px; height: 44px; display: inline-flex; align-items: center; justify-content: center; border-radius: 22px; border: 0; background: transparent; cursor: pointer; }
+  .head { padding: 8px 24px 20px; display: flex; flex-direction: column; gap: 6px; }
+  .head h1 { margin: 0; font-size: 26px; line-height: 1.3; font-weight: 800; }
+  .head p, .muted { margin: 0; font-size: 14px; line-height: 1.6; color: var(--sub); }
+  .card { margin: 0 16px; background: #fff; border-radius: 20px; padding: 22px 20px; display: flex; flex-direction: column; gap: 16px; }
+  .gap { height: 14px; }
+  .tile { display: flex; align-items: center; justify-content: space-between; gap: 12px; background: #fff; border-radius: 20px; padding: 20px; text-decoration: none; color: var(--ink); border: 0; width: 100%; text-align: left; font: inherit; cursor: pointer; }
+  .tile b { font-size: 19px; font-weight: 800; display: block; }
+  .tile span { font-size: 13px; color: var(--sub); }
+  .tile[disabled] { opacity: .55; cursor: default; }
+  label.f { display: flex; flex-direction: column; gap: 6px; font-size: 14px; font-weight: 700; }
+  input[type=text], input[type=tel], select { height: 50px; border: 1px solid var(--line); border-radius: 12px; padding: 0 14px; font-size: 16px; font-family: inherit; color: var(--ink); background: #fff; width: 100%; }
+  input:focus, select:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .hint { font-size: 12px; font-weight: 400; color: #5B6573; }
+  .agree { display: flex; gap: 10px; align-items: flex-start; font-size: 13px; line-height: 1.5; color: var(--sub); }
+  .agree input { width: 20px; height: 20px; margin: 0; flex-shrink: 0; }
+  .foot { margin-top: auto; padding: 18px 16px 28px; display: flex; flex-direction: column; gap: 10px; }
+  .btn { height: 56px; width: 100%; border-radius: 14px; border: 0; background: var(--accent); color: #fff; font-size: 17px; font-weight: 700; font-family: inherit; display: flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer; text-decoration: none; }
+  .btn.ghost { background: transparent; color: var(--ink); border: 1.5px solid var(--ink); }
+  .btn.link { background: transparent; color: var(--accent); height: 44px; font-weight: 500; font-size: 15px; }
+  .btn[disabled] { opacity: .6; }
+  .err { margin: 12px 16px 0; background: #FDE2DF; color: #8A1C12; border-radius: 12px; padding: 12px 14px; font-size: 14px; line-height: 1.5; }
+  .note { margin: 14px 16px 0; background: #E8EEFC; color: #1D3A8A; border-radius: 14px; padding: 14px 16px; font-size: 13px; line-height: 1.6; }
+  .center { padding: 32px 24px 22px; display: flex; flex-direction: column; align-items: center; gap: 12px; text-align: center; }
+  .center h1 { margin: 0; font-size: 24px; line-height: 1.35; font-weight: 800; }
+  .icon { width: 64px; height: 64px; border-radius: 32px; display: flex; align-items: center; justify-content: center; }
+  .kv { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid #E6EAEE; font-size: 14px; gap: 12px; }
+  .kv:last-child { border-bottom: 0; }
+  .kv span:first-child { color: var(--sub); }
+  .kv span:last-child { font-weight: 700; text-align: right; }
+  .chip { display: inline-block; font-size: 12px; font-weight: 700; border-radius: 999px; padding: 4px 10px; background: #E8EEFC; color: #1D3A8A; }
+  .chip.warn { background: #FFF1D6; color: #8A4B00; }
+  .acct { background: var(--bg); border-radius: 14px; padding: 14px 16px; display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+  .acct b { font-size: 17px; letter-spacing: .02em; word-break: break-all; }
+  .copy { height: 40px; padding: 0 14px; border: 1px solid var(--line); border-radius: 10px; background: #fff; font-size: 14px; font-weight: 700; font-family: inherit; color: var(--ink); flex-shrink: 0; cursor: pointer; }
+  .qrwrap { background: var(--accent); flex: 1; padding: 40px 20px 28px; display: flex; flex-direction: column; align-items: center; gap: 18px; color: #fff; }
+  .qrwrap h1 { margin: 0; font-size: 22px; font-weight: 800; text-align: center; }
+  .qrwrap p { margin: 0; font-size: 14px; text-align: center; line-height: 1.5; }
+  .qrwrap img { width: 100%; max-width: 360px; border-radius: 20px; display: block; -webkit-touch-callout: default; }
+  .qrwrap .btn { background: #fff; color: var(--ink); max-width: 360px; }
+  .qrwrap .btn.link { background: transparent; color: #fff; }
+  .steps { display: flex; flex-direction: column; gap: 12px; }
+  .step { display: flex; gap: 12px; align-items: center; }
+  .step i { width: 26px; height: 26px; border-radius: 13px; background: #E8EEFC; color: #1D3A8A; font-style: normal; font-size: 12px; font-weight: 800; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .step b { font-size: 15px; display: block; }
+  .step span { font-size: 12px; color: var(--sub); }
+  .loading { flex: 1; display: flex; align-items: center; justify-content: center; color: var(--sub); font-size: 15px; }
+  .toast { position: fixed; left: 50%; bottom: 32px; transform: translateX(-50%); background: var(--ink); color: #fff; padding: 12px 18px; border-radius: 12px; font-size: 14px; z-index: 9; }
+</style>
+</head>
+<body>
+<main id="app"><div class="loading">불러오는 중…</div></main>
+
+<script>
+/* ▼▼▼ 배포한 Apps Script 웹 앱 주소를 붙여 넣으세요 ▼▼▼ */
+const API_URL = 'https://script.google.com/macros/s/AKfycbyShLL1_2Xfdx81pcL0u-_mw3WI3qY8Owssp3KG9Q7wxEIOKTWt3WGMvQI1n6keRdw1/exec';
+/* ▲▲▲ */
+
+/* ── 미리보기 모드: API_URL을 아직 안 넣었으면 이 브라우저 안의 예시 데이터로 작동 (시트에 저장 안 됨) ── */
+const DEMO = API_URL.indexOf('PASTE_') === 0;
+const DEMO_KEY = 'retreat-demo-db';
+function demoLoad() {
+  try { const d = JSON.parse(localStorage.getItem(DEMO_KEY) || 'null'); if (d && d.rows) return d; } catch (e) {}
+  return { rows: [
+    { guk: '3국', ddorae: '01또래', name: '김은혜', leader: '박지훈', phone: '01012342847', tier: '1차', amount: 40000, due: '2026-12-14', paid: true, code: 'K7P2X9QM', days: ['', '', ''] },
+    { guk: '3국', ddorae: '00또래', name: '박하늘', leader: '박지훈', phone: '01055125512', tier: '1차', amount: 40000, due: '2026-12-14', paid: false, code: 'M3QA8TZD', days: ['', '', ''] },
+    { guk: '1국', ddorae: '99또래', name: '이수아', leader: '조민재', phone: '01077207720', tier: '1차', amount: 40000, due: '2026-12-14', paid: true, code: 'B8LD4RYS', days: ['', '', ''] },
+  ] };
+}
+function demoSave(db) { try { localStorage.setItem(DEMO_KEY, JSON.stringify(db)); } catch (e) {} }
+async function demoApi(action, d) {
+  await new Promise(r => setTimeout(r, 250));
+  const db = demoLoad();
+  const days = ['1/4', '1/5', '1/6'];
+  const cfg = { status: 'ok', title: '청년부 수양회', dateText: '2027. 1. 4 (월) – 1. 6 (수)', guks: ['1국', '2국', '3국', '4국', '5국', 'BSC'],
+    ddorae: ['99또래', '00또래', '01또래'], days: days, today: -1, regOpen: true };
+  const acct = g => ({ bank: '[은행]', account: '[' + g + ' 계좌번호]', holder: '[' + g + ' 회계]' });
+  const nm = s => String(s || '').replace(/\s+/g, ''), dg = s => String(s || '').replace(/\D/g, '');
+  const pub = r => ({ name: r.name, guk: r.guk, ddorae: r.ddorae, paid: r.paid, days: r.days.slice() });
+  const total = () => db.rows.filter(x => x.paid).length;
+  const cnt = i => db.rows.filter(x => x.paid && x.days[i]).length;
+  const hm = () => { const t = new Date(); return ('0' + t.getHours()).slice(-2) + ':' + ('0' + t.getMinutes()).slice(-2); };
+  d = d || {};
+  if (action === 'config') return cfg;
+  if (action === 'register') {
+    const ph = dg(d.phone);
+    const dup = db.rows.find(r => r.phone === ph && nm(r.name) === nm(d.name));
+    if (dup) return { status: 'exists', ...pub(dup), tier: dup.tier, amount: dup.amount, due: dup.due, ...acct(dup.guk) };
+    const S = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; let code = ''; for (let i = 0; i < 8; i++) code += S[Math.floor(Math.random() * S.length)];
+    const r = { guk: d.guk, ddorae: d.ddorae, name: String(d.name).trim(), leader: d.leader, phone: ph, tier: '1차', amount: 40000, due: '2026-12-14', paid: false, code: code, days: ['', '', ''] };
+    db.rows.push(r); demoSave(db);
+    return { status: 'ok', guk: r.guk, name: r.name, ddorae: r.ddorae, tier: r.tier, amount: r.amount, due: r.due, ...acct(r.guk) };
+  }
+  if (action === 'lookup') {
+    let m = db.rows.filter(r => nm(r.name) === nm(d.name) && r.phone.slice(-4) === dg(d.last4));
+    if (d.guk) m = m.filter(r => r.guk === d.guk);
+    if (d.ddorae) m = m.filter(r => r.ddorae === d.ddorae);
+    if (!m.length) return { status: 'notfound' };
+    if (m.length > 1) return { status: 'multiple', options: m.map(r => ({ guk: r.guk, ddorae: r.ddorae })) };
+    const r = m[0];
+    if (!r.paid) return { status: 'pending', name: r.name, guk: r.guk, ddorae: r.ddorae, tier: r.tier, amount: r.amount, due: r.due, demoCode: r.code, ...acct(r.guk) };
+    return { status: 'ok', code: r.code, days: days, name: r.name, guk: r.guk, ddorae: r.ddorae };
+  }
+  if (action === 'demoPay') { const r = db.rows.find(x => x.code === d.code); if (r) { r.paid = true; demoSave(db); } return { status: 'ok' }; }
+  if (String(d.pin || '') !== '0000') return { status: 'denied' };
+  const day = d.day === undefined || d.day === '' ? 0 : Number(d.day);
+  if (action === 'staffLogin' || action === 'stats') return { status: 'ok', title: cfg.title, dayIdx: day, today: -1, days: days, registered: db.rows.length, total: total(), count: cnt(day) };
+  if (action === 'checkin') {
+    const r = db.rows.find(x => x.code === String(d.code || '').trim().toUpperCase());
+    if (!r) return { status: 'notfound' };
+    if (!r.paid) return { status: 'unpaid', ...pub(r), dayIdx: day };
+    if (r.days[day]) return { status: 'dup', at: r.days[day], ...pub(r), dayIdx: day, count: cnt(day), total: total() };
+    r.days[day] = hm() + (d.desk ? ' (' + d.desk + '번)' : ''); demoSave(db);
+    return { status: 'ok', at: r.days[day], ...pub(r), dayIdx: day, count: cnt(day), total: total() };
+  }
+  if (action === 'search') {
+    const q = String(d.q || '').trim();
+    const list = db.rows.filter(r => /^\d{4}$/.test(q) ? r.phone.slice(-4) === q : nm(r.name).indexOf(nm(q)) >= 0)
+      .map(r => ({ code: r.code, last4: r.phone.slice(-4), ...pub(r) }));
+    return { status: 'ok', list: list };
+  }
+  return { status: 'error', message: '알 수 없는 요청' };
+}
+function demoBanner(text) {
+  if (!DEMO) return;
+  const b = document.createElement('div');
+  b.style.cssText = 'position:sticky;top:0;z-index:30;background:#141B24;color:#FFD58A;font:500 12px "Noto Sans KR",sans-serif;padding:8px 12px;text-align:center;line-height:1.5';
+  b.innerHTML = text + ' <button style="margin-left:6px;border:1px solid #FFD58A;background:transparent;color:#FFD58A;border-radius:8px;padding:2px 8px;font:inherit;cursor:pointer" onclick="localStorage.removeItem(\'' + DEMO_KEY + '\');location.reload()">예시 초기화</button>';
+  document.body.insertBefore(b, document.body.firstChild);
+}
+
+
+const app = document.getElementById('app');
+let CFG = null;
+const SAVE_KEY = 'retreat-myqr';
+
+const ICON_BACK = '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#141B24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>';
+const ICON_NEXT = '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#141B24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg>';
+
+function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
+function won(n) { return Number(n || 0).toLocaleString('ko-KR') + '원'; }
+function md(ymd) { if (!ymd) return ''; const p = ymd.split('-'); return Number(p[1]) + '/' + Number(p[2]); }
+function toast(msg) { const t = document.createElement('div'); t.className = 'toast'; t.textContent = msg; document.body.appendChild(t); setTimeout(() => t.remove(), 1800); }
+
+async function api(action, data) {
+  if (DEMO) return demoApi(action, data);
+  const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify(Object.assign({ action }, data || {})) });
+  if (!res.ok) throw new Error('서버 응답 오류 (' + res.status + ')');
+  return res.json();
+}
+
+function topBar(backTo) { return '<div class="top"><button class="back" aria-label="뒤로" onclick="go(\'' + backTo + '\')">' + ICON_BACK + '</button></div>'; }
+function setBusy(btn, on, label) { if (!btn) return; btn.disabled = on; if (label) btn.textContent = on ? '잠시만요…' : label; }
+function showErr(id, msg) { const el = document.getElementById(id); if (el) { el.textContent = msg; el.hidden = !msg; } }
+
+function go(view, data) {
+  const views = { home, register, lookup };
+  (views[view] || home)(data);
+  window.scrollTo(0, 0);
+  if (view !== location.hash.slice(1)) history.replaceState(null, '', view === 'home' ? location.pathname : '#' + view);
+}
+
+/* ── 홈 ── */
+function home() {
+  const saved = loadSaved();
+  app.innerHTML = `
+    <div class="hero"><small>${esc(CFG.title)}</small><h1>${esc(CFG.dateText)}</h1></div>
+    <div style="padding:20px 16px 0;display:flex;flex-direction:column;gap:12px">
+      <button class="tile" onclick="go('register')" ${CFG.regOpen ? '' : 'disabled'}>
+        <div><b>수양회 등록</b><span>${CFG.regOpen ? '국 · 또래 · 이름 · 리더 · 연락처' : '등록이 마감됐어요'}</span></div>${ICON_NEXT}</button>
+      <button class="tile" onclick="go('lookup')">
+        <div><b>내 QR 받기</b><span>회계가 회비를 확인한 뒤에 열려요</span></div>${ICON_NEXT}</button>
+      ${saved ? `<button class="tile" onclick="showSaved()"><div><b>저장된 내 QR</b><span>${esc(saved.name)} · ${esc(saved.guk)}</span></div>${ICON_NEXT}</button>` : ''}
+    </div>
+    <div class="card" style="margin-top:20px">
+      <div class="steps">
+        <div class="step"><i>1</i><div><b>수양회 등록</b><span>이 페이지에서 직접</span></div></div>
+        <div class="step"><i>2</i><div><b>회비 입금</b><span>등록 후 안내되는 국 계좌로, 안내된 기한까지</span></div></div>
+        <div class="step"><i>3</i><div><b>국 회계 확인</b><span>확인되면 QR이 열려요</span></div></div>
+        <div class="step"><i>4</i><div><b>내 QR 받기</b><span>이름과 휴대폰 뒷자리로 다운로드</span></div></div>
+        <div class="step"><i>5</i><div><b>매일 출석 체크</b><span>${esc(CFG.days.join(' · '))} 같은 QR 하나로</span></div></div>
+      </div>
+    </div>
+    <div style="height:28px"></div>`;
+}
+
+/* ── 등록 ── */
+function register() {
+  const opt = arr => arr.map(x => `<option>${esc(x)}</option>`).join('');
+  app.innerHTML = `${topBar('home')}
+    <div class="head"><h1>수양회 등록</h1><p>등록하면 회비 금액과 입금 계좌를 안내해 드려요.</p></div>
+    <form class="card" id="f" onsubmit="return false">
+      <div class="row2">
+        <label class="f">국<select name="guk" required><option value="">선택</option>${opt(CFG.guks)}</select></label>
+        <label class="f">또래<select name="ddorae" required><option value="">선택</option>${opt(CFG.ddorae)}</select></label>
+      </div>
+      <label class="f">이름<input type="text" name="name" autocomplete="name" required></label>
+      <label class="f">리더 이름<input type="text" name="leader" required></label>
+      <label class="f">연락처<input type="tel" name="phone" inputmode="numeric" placeholder="010-0000-0000" autocomplete="tel" required>
+        <span class="hint">QR을 받을 때 뒷자리 4자리로 본인 확인을 해요.</span></label>
+      <label class="agree"><input type="checkbox" name="agree"><span>입력한 정보를 수양회 접수·회비 확인·출석 체크에만 쓰는 데 동의합니다.</span></label>
+    </form>
+    <div class="err" id="e" hidden></div>
+    <div class="foot"><button class="btn" id="b" onclick="submitReg()">등록하기</button></div>`;
+}
+
+async function submitReg() {
+  const f = document.getElementById('f'), b = document.getElementById('b');
+  const d = Object.fromEntries(new FormData(f).entries());
+  d.agree = f.querySelector('[name=agree]').checked;
+  if (!d.guk || !d.ddorae) return showErr('e', '국과 또래를 선택해 주세요.');
+  if (!d.name || !d.leader) return showErr('e', '이름과 리더 이름을 적어 주세요.');
+  if ((d.phone || '').replace(/\D/g, '').length < 10) return showErr('e', '연락처를 다시 확인해 주세요.');
+  if (!d.agree) return showErr('e', '개인정보 이용에 동의해 주세요.');
+  showErr('e', '');
+  setBusy(b, true, '등록하기');
+  try {
+    const r = await api('register', d);
+    if (r.status === 'ok' || r.status === 'exists') return done(r);
+    showErr('e', r.message || '등록하지 못했어요. 잠시 뒤 다시 시도해 주세요.');
+  } catch (err) {
+    showErr('e', '연결이 불안정해요. 잠시 뒤 다시 시도해 주세요.');
+  }
+  setBusy(b, false, '등록하기');
+}
+
+function payCard(r) {
+  return `
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px">
+        <div style="display:flex;flex-direction:column;gap:6px"><span class="muted">${esc(r.guk)} 회비</span>
+          ${r.tier ? `<span class="chip">${esc(r.tier)} 접수${r.due ? ' · ' + md(r.due) + '까지 입금' : ''}</span>` : ''}</div>
+        <b style="font-size:22px">${won(r.amount)}</b>
+      </div>
+      ${r.account ? `<div class="acct">
+        <div style="display:flex;flex-direction:column;gap:2px;min-width:0">
+          <span class="muted" style="font-size:13px">${esc(r.guk)} 계좌 · ${esc(r.bank)} · 예금주 ${esc(r.holder)}</span>
+          <b>${esc(r.account)}</b>
+        </div>
+        <button class="copy" onclick="copyText('${esc(String(r.account).replace(/[^\d-]/g, ''))}')">복사</button>
+      </div>` : `<div class="acct"><span class="muted">${esc(r.guk)} 입금 계좌는 ${esc(r.guk)} 회계에게 문의해 주세요.</span></div>`}
+      <div style="font-size:13px;line-height:1.6;color:#2E3742">${r.due ? '<b>' + md(r.due) + '</b>까지 입금해 주세요. ' : ''}입금자명은 <b>본인 이름</b>으로, 다른 이름으로 보냈다면 ${esc(r.guk)} 회계에게 알려 주세요.</div>
+    </div>`;
+}
+
+function done(r) {
+  const exists = r.status === 'exists';
+  app.innerHTML = `
+    <div class="center">
+      <div class="icon" style="background:#E3F5EC"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#0B5C3C" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></div>
+      <h1>${exists ? '이미 등록돼 있어요' : '등록됐어요'}</h1>
+      <p class="muted">${exists && r.paid ? '회비 확인도 끝났어요. 내 QR을 받아 가세요.' : '아래 계좌로 회비를 보내 주세요.<br>' + esc(r.guk) + ' 회계가 확인하면 QR을 받을 수 있어요.'}</p>
+    </div>
+    ${exists && r.paid ? '' : payCard(r)}
+    <div class="card" style="margin-top:14px;padding:6px 20px;gap:0">
+      <div class="kv"><span>국 · 또래</span><span>${esc(r.guk)} · ${esc(r.ddorae)}</span></div>
+      <div class="kv"><span>이름</span><span>${esc(r.name)}</span></div>
+    </div>
+    <div class="foot">
+      <button class="btn" onclick="go('lookup')">${exists && r.paid ? '내 QR 받기' : '입금했어요 · 내 QR 확인하기'}</button>
+      <button class="btn link" onclick="go('home')">처음으로</button>
+    </div>`;
+}
+
+function copyText(t) {
+  (navigator.clipboard ? navigator.clipboard.writeText(t) : Promise.reject()).then(() => toast('계좌번호를 복사했어요'), () => toast(t));
+}
+
+/* ── 내 QR 받기 ── */
+function lookup(extra) {
+  const opt = arr => arr.map(x => `<option>${esc(x)}</option>`).join('');
+  const multi = extra && extra.multiple;
+  app.innerHTML = `${topBar('home')}
+    <div class="head"><h1>내 QR 받기</h1><p>등록할 때 쓴 이름과 휴대폰 뒷자리를 넣어 주세요. 회계가 회비를 확인했다면 QR이 바로 나와요.</p></div>
+    <form class="card" id="f" onsubmit="return false">
+      <label class="f">이름<input type="text" name="name" value="${esc(extra && extra.name || '')}" required></label>
+      <label class="f">휴대폰 번호 뒷자리 4자리<input type="tel" name="last4" inputmode="numeric" maxlength="4" value="${esc(extra && extra.last4 || '')}" style="letter-spacing:.2em" required></label>
+      ${multi ? `<div class="row2">
+        <label class="f">국<select name="guk"><option value="">선택</option>${opt(CFG.guks)}</select></label>
+        <label class="f">또래<select name="ddorae"><option value="">선택</option>${opt(CFG.ddorae)}</select></label></div>` : ''}
+    </form>
+    ${multi ? '<div class="note">같은 이름·뒷자리가 여러 명이에요. 국과 또래를 골라 주세요.</div>' : ''}
+    <div class="err" id="e" hidden></div>
+    <div class="foot"><button class="btn" id="b" onclick="submitLookup()">내 QR 확인하기</button></div>`;
+}
+
+async function submitLookup() {
+  const f = document.getElementById('f'), b = document.getElementById('b');
+  const d = Object.fromEntries(new FormData(f).entries());
+  if (!d.name) return showErr('e', '이름을 적어 주세요.');
+  if ((d.last4 || '').replace(/\D/g, '').length !== 4) return showErr('e', '휴대폰 뒷자리 4자리를 적어 주세요.');
+  showErr('e', '');
+  setBusy(b, true, '내 QR 확인하기');
+  try {
+    const r = await api('lookup', d);
+    if (r.status === 'ok') return showQR(r);
+    if (r.status === 'pending') return pending(r);
+    if (r.status === 'notfound') return notfound();
+    if (r.status === 'multiple') return lookup({ multiple: true, name: d.name, last4: d.last4 });
+    showErr('e', r.message || '확인하지 못했어요. 잠시 뒤 다시 시도해 주세요.');
+  } catch (err) {
+    showErr('e', '연결이 불안정해요. 잠시 뒤 다시 시도해 주세요.');
+  }
+  setBusy(b, false, '내 QR 확인하기');
+}
+
+function pending(r) {
+  app.innerHTML = `${topBar('lookup')}
+    <div class="center">
+      <div class="icon" style="background:#FFF1D6"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#8A4B00" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg></div>
+      <h1>등록은 확인됐어요<br>회비 확인을 기다리는 중이에요</h1>
+      <p class="muted">${esc(r.guk)} 회계가 입금을 확인하면 이 페이지에서 바로 QR을 받을 수 있어요.</p>
+    </div>
+    <div class="card" style="padding:6px 20px;gap:0">
+      <div class="kv"><span>이름</span><span>${esc(r.name)}</span></div>
+      <div class="kv"><span>국 · 또래</span><span>${esc(r.guk)} · ${esc(r.ddorae)}</span></div>
+      <div class="kv"><span>확인 상태</span><span><span class="chip warn">확인 대기</span></span></div>
+    </div>
+    <div class="gap"></div>
+    ${payCard(r)}
+    <div class="foot">
+      ${DEMO && r.demoCode ? `<button class="btn" onclick="demoApi('demoPay',{code:'${esc(r.demoCode)}'}).then(()=>go('lookup'))">미리보기: 회계가 확인했다고 치기</button>` : ''}
+      <button class="btn ghost" onclick="go('home')">처음으로</button></div>`;
+}
+
+function notfound() {
+  app.innerHTML = `${topBar('lookup')}
+    <div class="center">
+      <div class="icon" style="background:#E6EAEE"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#141B24" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4 4"/></svg></div>
+      <h1>등록 기록을 찾지 못했어요</h1>
+      <p class="muted">입력한 이름과 번호로 등록된 사람이 없어요.</p>
+    </div>
+    <div class="card">
+      <b style="font-size:14px">이렇게 확인해 보세요</b>
+      <div class="muted">1. 이름에 띄어쓰기나 오타가 없는지</div>
+      <div class="muted">2. 등록할 때 쓴 번호와 같은 번호인지</div>
+      <div class="muted">3. 그래도 없으면 아직 등록 전이에요. ${CFG.regOpen ? '<a href="#register" onclick="go(\'register\');return false">수양회 등록</a>부터 해 주세요.' : '소속 국 회계에게 문의해 주세요.'}</div>
+    </div>
+    <div class="foot"><button class="btn" onclick="go('lookup')">다시 입력하기</button></div>`;
+}
+
+/* ── QR 카드 ── */
+async function makeCard(r) {
+  try { await document.fonts.load('800 60px "Noto Sans KR"'); await document.fonts.load('500 30px "Noto Sans KR"'); } catch (e) {}
+  const W = 900, H = 1240, c = document.createElement('canvas');
+  c.width = W; c.height = H;
+  const x = c.getContext('2d');
+  const F = '"Noto Sans KR", sans-serif';
+  x.fillStyle = '#FFFFFF'; x.fillRect(0, 0, W, H);
+  x.fillStyle = '#1F4FD8'; x.fillRect(0, 0, W, 170);
+  x.fillStyle = '#FFFFFF'; x.textAlign = 'center';
+  x.font = '700 30px ' + F; x.fillText(CFG.title + ' 입장 QR', W / 2, 78);
+  x.font = '500 26px ' + F; x.fillText(CFG.dateText, W / 2, 126);
+
+  const qr = qrcode(0, 'M'); qr.addData(r.code); qr.make();
+  const n = qr.getModuleCount(), size = 600, cell = size / (n + 8), ox = (W - size) / 2, oy = 220;
+  x.fillStyle = '#141B24';
+  for (let i = 0; i < n; i++) for (let j = 0; j < n; j++) {
+    if (qr.isDark(i, j)) x.fillRect(Math.floor(ox + (j + 4) * cell), Math.floor(oy + (i + 4) * cell), Math.ceil(cell), Math.ceil(cell));
+  }
+  x.fillStyle = '#141B24'; x.font = '800 64px ' + F; x.fillText(r.name, W / 2, 900);
+  x.fillStyle = '#4A5563'; x.font = '500 32px ' + F; x.fillText(r.guk + ' · ' + r.ddorae, W / 2, 955);
+  x.strokeStyle = '#C9D0D8'; x.setLineDash([10, 8]); x.lineWidth = 2;
+  x.beginPath(); x.moveTo(80, 1010); x.lineTo(W - 80, 1010); x.stroke(); x.setLineDash([]);
+  x.font = '500 26px ' + F; x.fillStyle = '#4A5563';
+  x.fillText((r.days || CFG.days).join(' · ') + ' 매일 입구에서 보여 주세요', W / 2, 1070);
+  x.font = '700 28px ui-monospace, Menlo, monospace'; x.fillStyle = '#141B24';
+  x.fillText(r.code, W / 2, 1130);
+  return c.toDataURL('image/png');
+}
+
+async function showQR(r) {
+  saveLocal(r);
+  app.innerHTML = '<div class="loading">QR 만드는 중…</div>';
+  const url = await makeCard(r);
+  const file = '수양회QR_' + r.name + '.png';
+  app.innerHTML = `
+    <div class="qrwrap">
+      <h1>입장 QR이 준비됐어요</h1>
+      <p>${esc(CFG.days.join(' · '))} 사흘 동안 이 QR 하나로 출석 체크해요.</p>
+      <img src="${url}" alt="${esc(r.name)} 입장 QR">
+      <a class="btn" href="${url}" download="${esc(file)}">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#141B24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11"/><path d="M7 10.5l5 5 5-5"/><path d="M5 20h14"/></svg>QR 이미지 저장</a>
+      <p style="font-size:12px">저장이 안 되면 이미지를 길게 눌러 저장하거나 이 화면을 캡처해 주세요.<br>사진을 지웠다면 같은 페이지에서 언제든 다시 받을 수 있어요.</p>
+      <button class="btn link" onclick="go('home')">처음으로</button>
+    </div>`;
+}
+
+function saveLocal(r) { try { localStorage.setItem(SAVE_KEY, JSON.stringify({ code: r.code, name: r.name, guk: r.guk, ddorae: r.ddorae, days: r.days })); } catch (e) {} }
+function loadSaved() { try { return JSON.parse(localStorage.getItem(SAVE_KEY) || 'null'); } catch (e) { return null; } }
+function showSaved() { const s = loadSaved(); if (s) showQR(s); }
+
+/* ── 시작 ── */
+(async function init() {
+  demoBanner('미리보기 모드 · 예시 데이터로 작동하고 시트에는 저장되지 않아요 (예시: 김은혜 / 2847)');
+  try {
+    CFG = await api('config');
+    document.title = CFG.title;
+    go(location.hash.slice(1) || 'home');
+  } catch (e) {
+    app.innerHTML = '<div class="loading" style="padding:24px;text-align:center">연결하지 못했어요. 잠시 뒤 새로고침해 주세요.</div>';
+  }
+})();
+</script>
+</body>
+</html>

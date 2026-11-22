@@ -1,0 +1,520 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>수양회 출석 체크 (스태프)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;800&display=swap">
+<script src="https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+<style>
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: #0E1319; color: #fff; font-family: 'Noto Sans KR', system-ui, sans-serif; }
+  main { max-width: 520px; margin: 0 auto; min-height: 100dvh; display: flex; flex-direction: column; }
+  .tabs { display: grid; grid-template-columns: repeat(var(--n, 3), 1fr); gap: 6px; background: #1B232D; border-radius: 14px; padding: 4px; margin: 16px 16px 0; }
+  .tabs button { border: 0; border-radius: 10px; padding: 9px 0; background: transparent; color: #AEB8C4; font: 500 13px 'Noto Sans KR', sans-serif; cursor: pointer; }
+  .tabs button.on { background: #fff; color: #0E1319; font-weight: 800; }
+  .bar { padding: 12px 20px 6px; display: flex; justify-content: space-between; align-items: flex-end; }
+  .bar small { font-size: 13px; color: #AEB8C4; display: block; }
+  .bar b { font-size: 22px; font-weight: 800; }
+  .bar .cnt { text-align: right; }
+  .sync { margin: 0 20px 10px; font-size: 12px; color: #AEB8C4; display: flex; align-items: center; gap: 6px; }
+  .sync i { width: 8px; height: 8px; border-radius: 4px; background: #3CC9A0; display: inline-block; }
+  .sync.wait i { background: #FFB020; } .sync.off i { background: #FF6B5B; }
+  .warn { margin: 0 16px 8px; background: #3A2A10; color: #FFD58A; border-radius: 10px; padding: 8px 12px; font-size: 13px; }
+  #readerBox { margin: 0 16px; border-radius: 22px; background: #1B232D; overflow: hidden; min-height: 320px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; }
+  #reader { width: 100%; }
+  .start { border: 0; border-radius: 14px; height: 54px; padding: 0 24px; background: #5B8CFF; color: #fff; font: 700 16px 'Noto Sans KR', sans-serif; cursor: pointer; }
+  .recent { margin: 14px 16px 0; background: #1B232D; border-radius: 16px; padding: 14px 16px; display: flex; flex-direction: column; gap: 8px; font-size: 14px; }
+  .recent h3 { margin: 0; font-size: 12px; color: #AEB8C4; }
+  .recent div { display: flex; justify-content: space-between; gap: 8px; }
+  .recent span.s { color: #C9D2DC; }
+  .actions { padding: 14px 16px 28px; display: flex; gap: 10px; }
+  .actions button { flex: 1; height: 52px; border-radius: 14px; border: 1.5px solid #4A5563; background: transparent; color: #fff; font: 700 15px 'Noto Sans KR', sans-serif; cursor: pointer; }
+  .overlay { position: fixed; inset: 0; z-index: 20; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; text-align: center; padding: 32px 24px; }
+  .overlay .big { font-size: 52px; font-weight: 800; line-height: 1.1; }
+  .overlay .t { font-size: 21px; font-weight: 700; }
+  .overlay .s { font-size: 17px; font-weight: 700; }
+  .overlay .m { font-size: 14px; line-height: 1.6; opacity: .95; }
+  .overlay button { margin-top: 18px; width: 100%; max-width: 420px; height: 56px; border-radius: 14px; border: 0; font: 700 17px 'Noto Sans KR', sans-serif; cursor: pointer; }
+  .ok { background: #0E7A50; color: #fff; } .ok button { background: #fff; color: #0B5C3C; }
+  .dup { background: #F5A524; color: #2A1600; } .dup button { background: #2A1600; color: #fff; }
+  .bad { background: #B42318; color: #fff; } .bad button { background: #fff; color: #7A160E; }
+  .none { background: #4A5563; color: #fff; } .none button { background: #fff; color: #141B24; }
+  .dots { display: flex; gap: 18px; margin-top: 6px; }
+  .dots div { display: flex; flex-direction: column; align-items: center; gap: 6px; font-size: 13px; }
+  .dots i { width: 38px; height: 38px; border-radius: 19px; border: 2px dashed rgba(255,255,255,.6); display: flex; align-items: center; justify-content: center; font-style: normal; }
+  .dots i.y { border: 0; background: #fff; color: #0E7A50; font-weight: 800; }
+  .sheet { position: fixed; inset: 0; z-index: 15; background: #F3F5F7; color: #141B24; display: flex; flex-direction: column; max-width: 520px; margin: 0 auto; }
+  .sheet header { display: flex; align-items: center; gap: 6px; padding: 14px 10px 6px; }
+  .sheet header button { width: 44px; height: 44px; border: 0; background: transparent; border-radius: 22px; cursor: pointer; }
+  .sheet header h2 { margin: 0; font-size: 19px; font-weight: 800; flex: 1; }
+  .sheet input { margin: 6px 16px 10px; height: 52px; border: 1.5px solid #1F4FD8; border-radius: 14px; padding: 0 14px; font: 17px 'Noto Sans KR', sans-serif; }
+  .list { padding: 0 16px 24px; display: flex; flex-direction: column; gap: 10px; overflow: auto; }
+  .item { background: #fff; border-radius: 16px; padding: 14px 16px; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+  .item b { font-size: 17px; display: block; }
+  .item span { font-size: 13px; color: #4A5563; }
+  .item button { height: 44px; padding: 0 16px; border-radius: 12px; border: 0; background: #1F4FD8; color: #fff; font: 700 15px 'Noto Sans KR', sans-serif; flex-shrink: 0; cursor: pointer; }
+  .pill { flex-shrink: 0; font-size: 13px; font-weight: 700; border-radius: 999px; padding: 8px 12px; }
+  .pill.g { color: #0B5C3C; background: #E3F5EC; } .pill.w { color: #8A4B00; background: #FFF1D6; }
+  .login { flex: 1; display: flex; flex-direction: column; justify-content: center; padding: 24px; gap: 14px; }
+  .login h1 { margin: 0 0 8px; font-size: 24px; }
+  .login label { display: flex; flex-direction: column; gap: 6px; font-size: 14px; font-weight: 700; color: #C9D2DC; }
+  .login input { height: 52px; border-radius: 12px; border: 1px solid #4A5563; background: #1B232D; color: #fff; padding: 0 14px; font: 18px 'Noto Sans KR', sans-serif; }
+  .login button { height: 56px; border-radius: 14px; border: 0; background: #5B8CFF; color: #fff; font: 700 17px 'Noto Sans KR', sans-serif; margin-top: 8px; cursor: pointer; }
+  .msg { color: #FFB4A8; font-size: 14px; min-height: 20px; }
+  .toast { position: fixed; left: 50%; bottom: 28px; transform: translateX(-50%); background: #fff; color: #141B24; padding: 12px 16px; border-radius: 12px; font-size: 14px; z-index: 30; max-width: 90vw; box-shadow: 0 6px 20px rgba(0,0,0,.3); }
+</style>
+</head>
+<body>
+<main id="app"></main>
+
+<script>
+/* ▼▼▼ index.html과 같은 Apps Script 웹 앱 주소 ▼▼▼ */
+const API_URL = 'https://script.google.com/macros/s/AKfycbyShLL1_2Xfdx81pcL0u-_mw3WI3qY8Owssp3KG9Q7wxEIOKTWt3WGMvQI1n6keRdw1/exec';
+/* ▲▲▲ */
+
+/*
+  작동 방식
+  - 로그인하면 명단(등록코드·이름·국·또래·뒷자리·회비확인·출석)을 폰에 받아 두고 1분마다 새로 받아요.
+  - QR을 찍으면 폰 안의 명단으로 바로 판정해서 화면을 띄워요(서버를 기다리지 않음).
+  - 시트에 적는 건 대기열에 넣어 뒤에서 묶어 보내고, 실패하면 자동으로 다시 보내요.
+  - 폰 명단에 없거나 회비 미확인으로 나오면 그때만 서버에 직접 물어봐요(회계가 방금 체크했을 수 있어서).
+*/
+
+const app = document.getElementById('app');
+const S = {
+  pin: '', desk: '', days: [], today: -1, day: 0,
+  roster: new Map(), queue: [], recent: [],
+  busy: false, last: '', lastAt: 0, scanner: null,
+  online: true, flushing: false, rosterAt: 0,
+};
+const K = { login: 'retreat-staff', roster: 'retreat-roster', queue: 'retreat-queue' };
+
+function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
+function localToday() { const t = new Date(); return S.days.indexOf((t.getMonth() + 1) + '/' + t.getDate()); }
+function hhmm() { const t = new Date(); return ('0' + t.getHours()).slice(-2) + ':' + ('0' + t.getMinutes()).slice(-2); }
+function ls(k, v) { try { if (v === undefined) return JSON.parse(localStorage.getItem(k) || 'null'); localStorage.setItem(k, JSON.stringify(v)); } catch (e) { return null; } }
+function toast(msg) { const t = document.createElement('div'); t.className = 'toast'; t.textContent = msg; document.body.appendChild(t); setTimeout(() => t.remove(), 3200); }
+
+/* ── 미리보기 모드: API_URL을 아직 안 넣었으면 이 브라우저 안의 예시 데이터로 작동 ── */
+const DEMO = API_URL.indexOf('PASTE_') === 0;
+const DEMO_KEY = 'retreat-demo-db';
+function demoLoad() {
+  try { const d = JSON.parse(localStorage.getItem(DEMO_KEY) || 'null'); if (d && d.rows) return d; } catch (e) {}
+  return { rows: [
+    { guk: '3국', ddorae: '01또래', name: '김은혜', leader: '박지훈', phone: '01012342847', tier: '1차', amount: 40000, due: '2026-12-14', paid: true, code: 'K7P2X9QM', days: ['', '', ''] },
+    { guk: '3국', ddorae: '00또래', name: '박하늘', leader: '박지훈', phone: '01055125512', tier: '1차', amount: 40000, due: '2026-12-14', paid: false, code: 'M3QA8TZD', days: ['', '', ''] },
+    { guk: '1국', ddorae: '99또래', name: '이수아', leader: '조민재', phone: '01077207720', tier: '1차', amount: 40000, due: '2026-12-14', paid: true, code: 'B8LD4RYS', days: ['', '', ''] },
+  ] };
+}
+function demoSave(db) { try { localStorage.setItem(DEMO_KEY, JSON.stringify(db)); } catch (e) {} }
+async function demoApi(action, d) {
+  await new Promise(r => setTimeout(r, 300));
+  const db = demoLoad(), days = ['1/4', '1/5', '1/6'];
+  d = d || {};
+  if (String(d.pin || '') !== '0000') return { status: 'denied' };
+  const pub = r => ({ name: r.name, guk: r.guk, ddorae: r.ddorae, paid: r.paid, days: r.days.slice() });
+  const day = d.day === undefined || d.day === '' ? 0 : Number(d.day);
+  const mark = it => {
+    const r = db.rows.find(x => x.code === String(it.code || '').toUpperCase());
+    if (!r) return { status: 'notfound' };
+    if (!r.paid) return { status: 'unpaid' };
+    const di = Number(it.day);
+    if (r.days[di]) return { status: 'dup', at: r.days[di] };
+    r.days[di] = (it.at || '00:00') + (it.desk ? ' (' + it.desk + '번)' : '');
+    return { status: 'ok', at: r.days[di] };
+  };
+  if (action === 'staffLogin' || action === 'stats') return { status: 'ok', days: days, today: -1, total: db.rows.filter(x => x.paid).length, count: 0 };
+  if (action === 'roster') return { status: 'ok', days: days, today: -1, list: db.rows.map(r => ({ c: r.code, n: r.name, g: r.guk, d: r.ddorae, l: r.phone.slice(-4), p: r.paid ? 1 : 0, a: r.days.slice() })) };
+  if (action === 'sync') { const results = (d.items || []).map(it => Object.assign({ id: it.id }, mark(it))); demoSave(db); return { status: 'ok', results: results }; }
+  if (action === 'checkin') {
+    const r = db.rows.find(x => x.code === String(d.code || '').toUpperCase());
+    if (!r) return { status: 'notfound' };
+    if (!r.paid) return Object.assign({ status: 'unpaid', code: r.code, dayIdx: day }, pub(r));
+    const res = mark({ code: r.code, day: day, desk: d.desk, at: d.at }); demoSave(db);
+    return Object.assign(pub(r), { status: res.status, at: res.at, code: r.code, dayIdx: day });
+  }
+  return { status: 'error', message: '알 수 없는 요청' };
+}
+function demoBanner(text) {
+  if (!DEMO) return;
+  const b = document.createElement('div');
+  b.style.cssText = 'position:sticky;top:0;z-index:40;background:#141B24;color:#FFD58A;font:500 12px "Noto Sans KR",sans-serif;padding:8px 12px;text-align:center;line-height:1.5';
+  b.innerHTML = text + ' <button style="margin-left:6px;border:1px solid #FFD58A;background:transparent;color:#FFD58A;border-radius:8px;padding:2px 8px;font:inherit;cursor:pointer" onclick="[\'' + DEMO_KEY + '\',\'retreat-roster\',\'retreat-queue\'].forEach(k=>localStorage.removeItem(k));location.reload()">예시 초기화</button>';
+  document.body.insertBefore(b, document.body.firstChild);
+}
+
+async function api(action, data, timeoutMs) {
+  const body = Object.assign({ action, pin: S.pin }, data || {});
+  if (DEMO) return demoApi(action, body);
+  const ctl = new AbortController();
+  const t = setTimeout(() => ctl.abort(), timeoutMs || 15000);
+  try {
+    const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify(body), signal: ctl.signal });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    return await res.json();
+  } finally { clearTimeout(t); }
+}
+
+/* ── 소리·진동 ── */
+let AC = null;
+function beep(kind) {
+  try {
+    AC = AC || new (window.AudioContext || window.webkitAudioContext)();
+    const tones = kind === 'ok' ? [880, 1320] : kind === 'dup' ? [520, 520] : [300, 220];
+    tones.forEach((f, i) => {
+      const o = AC.createOscillator(), g = AC.createGain();
+      o.frequency.value = f; o.connect(g); g.connect(AC.destination);
+      const t = AC.currentTime + i * 0.13;
+      g.gain.setValueAtTime(0.25, t); g.gain.exponentialRampToValueAtTime(0.001, t + 0.12);
+      o.start(t); o.stop(t + 0.13);
+    });
+  } catch (e) {}
+  if (navigator.vibrate) navigator.vibrate(kind === 'ok' ? 80 : [120, 80, 120]);
+}
+
+/* ── 명단 ── */
+function setRoster(list) {
+  const m = new Map();
+  list.forEach(r => m.set(r.c, { c: r.c, n: r.n, g: r.g, d: r.d, l: r.l, p: r.p, a: (r.a || []).slice() }));
+  // 아직 시트에 안 올라간 내 출석 기록은 덮어쓰지 않게 다시 얹기
+  S.queue.forEach(q => { const r = m.get(q.code); if (r && !r.a[q.day]) r.a[q.day] = q.stamp; });
+  S.roster = m;
+  ls(K.roster, { at: Date.now(), days: S.days, list: [...m.values()] });
+}
+
+async function loadRoster() {
+  try {
+    const r = await api('roster', {}, 20000);
+    if (r.status === 'denied') return logout('비밀번호가 바뀌었어요. 다시 로그인해 주세요.');
+    if (r.status !== 'ok') return false;
+    S.days = r.days; S.today = r.today;
+    setRoster(r.list);
+    S.rosterAt = Date.now(); S.online = true;
+    paintCounts(); paintSync();
+    return true;
+  } catch (e) {
+    S.online = false; paintSync();
+    return false;
+  }
+}
+
+function counts() {
+  let total = 0, count = 0;
+  S.roster.forEach(r => { if (r.p) { total++; if (r.a[S.day]) count++; } });
+  return { total, count };
+}
+
+/* ── 시트 반영 대기열 ── */
+function enqueue(item) { S.queue.push(item); ls(K.queue, S.queue); paintSync(); flush(); }
+
+async function flush() {
+  if (S.flushing || !S.queue.length) return;
+  S.flushing = true;
+  const batch = S.queue.slice(0, 30);
+  try {
+    const r = await api('sync', { items: batch.map(q => ({ id: q.id, code: q.code, day: q.day, desk: q.desk, at: q.at })) }, 20000);
+    if (r.status === 'denied') { S.flushing = false; return logout('비밀번호가 바뀌었어요. 다시 로그인해 주세요.'); }
+    if (r.status !== 'ok') throw new Error(r.message || 'sync');
+    const done = new Set();
+    r.results.forEach(res => {
+      const q = batch.find(x => x.id === res.id);
+      if (!q || res.status === 'error') return;
+      done.add(res.id);
+      const rec = S.roster.get(q.code);
+      if (res.status === 'dup' && rec && res.at && res.at !== q.stamp) {
+        rec.a[q.day] = res.at;
+        toast(q.name + '님은 이미 ' + res.at + '에 출석 처리돼 있었어요');
+      } else if (res.status === 'unpaid' && rec) {
+        rec.p = 0; rec.a[q.day] = '';
+        toast(q.name + '님은 시트에서 회비 확인이 풀려 있어요. 운영 데스크에 알려 주세요');
+      } else if (res.status === 'notfound') {
+        if (rec) rec.a[q.day] = '';
+        toast(q.name + '님 기록을 시트에서 찾지 못했어요. 운영 데스크에 알려 주세요');
+      }
+    });
+    S.queue = S.queue.filter(q => !done.has(q.id));
+    ls(K.queue, S.queue);
+    S.online = true;
+  } catch (e) {
+    S.online = false;
+  }
+  S.flushing = false;
+  paintSync(); paintCounts();
+}
+
+/* ── 로그인 ── */
+function loginView(msg) {
+  const saved = ls(K.login) || {};
+  app.innerHTML = `
+    <div class="login">
+      <h1>출석 체크 · 스태프</h1>
+      <label>스태프 비밀번호<input id="pin" type="password" inputmode="numeric" value="${esc(saved.pin || '')}"></label>
+      <label>접수대 번호<input id="desk" type="tel" inputmode="numeric" placeholder="예: 1" value="${esc(saved.desk || '')}"></label>
+      <div class="msg" id="msg">${esc(msg || '')}</div>
+      <button id="go">시작하기</button>
+    </div>`;
+  document.getElementById('go').onclick = async () => {
+    S.pin = document.getElementById('pin').value.trim();
+    S.desk = document.getElementById('desk').value.trim();
+    const m = document.getElementById('msg');
+    m.textContent = '명단 받는 중…';
+    try {
+      const r = await api('staffLogin', {});
+      if (r.status === 'denied') { S.pin = ''; return (m.textContent = '비밀번호가 맞지 않아요.'); }
+      if (r.status !== 'ok') return (m.textContent = r.message || '오류가 났어요.');
+      ls(K.login, { pin: S.pin, desk: S.desk });
+      S.days = r.days; S.today = r.today; S.day = r.today >= 0 ? r.today : 0;
+      if (!(await loadRoster())) return (m.textContent = '명단을 받지 못했어요. 인터넷을 확인하고 다시 눌러 주세요.');
+      mainView();
+    } catch (e) {
+      m.textContent = '연결하지 못했어요. 인터넷을 확인해 주세요.';
+    }
+  };
+}
+
+function logout(msg) {
+  stopCam();
+  S.pin = '';
+  const saved = ls(K.login) || {};
+  ls(K.login, { desk: saved.desk || S.desk });
+  loginView(msg || (S.queue.length ? '아직 시트에 안 올라간 기록 ' + S.queue.length + '건은 이 폰에 남아 있어요. 다시 로그인하면 이어서 보내요.' : ''));
+}
+
+/* ── 메인 화면 ── */
+function mainView() {
+  const tabs = S.days.map((d, i) => `<button class="${i === S.day ? 'on' : ''}" onclick="pickDay(${i})">${i + 1}일차 ${esc(d)}</button>`).join('');
+  const c = counts();
+  app.innerHTML = `
+    <div class="tabs" style="--n:${S.days.length}">${tabs}</div>
+    <div class="bar">
+      <div><small>출석 체크${S.desk ? ' · 접수 ' + esc(S.desk) + '번' : ''}</small><b>QR을 비춰 주세요</b></div>
+      <div class="cnt"><small>${S.day === S.today ? '오늘' : esc(S.days[S.day])} 출석</small><b id="cnt">${c.count}</b><small style="display:inline" id="tot"> / ${c.total}</small></div>
+    </div>
+    <div class="sync" id="sync"></div>
+    ${S.day !== S.today ? `<div class="warn">지금 고른 날짜(${esc(S.days[S.day])})는 오늘이 아니에요. 테스트가 아니라면 날짜를 확인해 주세요.</div>` : ''}
+    <div id="readerBox">
+      <div id="reader"></div>
+      <button class="start" id="startBtn" onclick="startCam()">카메라 켜기</button>
+    </div>
+    <div class="recent" id="recent">${recentHtml()}</div>
+    <div class="actions">
+      <button onclick="openSearch()">QR이 없어요 · 이름으로 찾기</button>
+      <button style="flex:0 0 96px" onclick="logout()">나가기</button>
+    </div>`;
+  paintSync();
+  if (S.scanner) startCam();
+}
+
+function recentHtml() {
+  const rows = S.recent.slice(0, 4).map(p => `<div><span><b>${esc(p.name)}</b> <span class="s">${esc(p.guk)} · ${esc(p.ddorae)}</span></span><span class="s">${esc(p.at)}</span></div>`).join('');
+  return '<h3>방금 출석</h3>' + (rows || '<div><span class="s">아직 없어요</span></div>');
+}
+function paintCounts() {
+  const c = counts();
+  const a = document.getElementById('cnt'), b = document.getElementById('tot');
+  if (a) a.textContent = c.count;
+  if (b) b.textContent = ' / ' + c.total;
+}
+function paintSync() {
+  const el = document.getElementById('sync');
+  if (!el) return;
+  const n = S.queue.length;
+  if (!S.online && n) { el.className = 'sync off'; el.innerHTML = `<i></i>인터넷이 불안정해요 · 시트 반영 대기 ${n}건 (연결되면 자동으로 보내요)`; }
+  else if (!S.online) { el.className = 'sync off'; el.innerHTML = '<i></i>인터넷이 불안정해요 · 받아 둔 명단으로 계속 찍을 수 있어요'; }
+  else if (n) { el.className = 'sync wait'; el.innerHTML = `<i></i>시트 반영 중 ${n}건`; }
+  else { el.className = 'sync'; el.innerHTML = `<i></i>시트 반영 완료 · 명단 ${S.roster.size}명`; }
+}
+function pickDay(i) { S.day = i; mainView(); }
+
+/* ── 카메라 ── */
+async function startCam() {
+  const btn = document.getElementById('startBtn');
+  if (btn) btn.remove();
+  try {
+    if (S.scanner) { try { await S.scanner.stop(); } catch (e) {} }
+    S.scanner = new Html5Qrcode('reader', { verbose: false });
+    await S.scanner.start({ facingMode: 'environment' },
+      { fps: 12, qrbox: (w, h) => { const m = Math.floor(Math.min(w, h) * 0.7); return { width: m, height: m }; } },
+      onScan, () => {});
+  } catch (e) {
+    const box = document.getElementById('readerBox');
+    if (box) box.innerHTML = '<div style="padding:24px;text-align:center;color:#C9D2DC;font-size:14px;line-height:1.6">카메라를 켜지 못했어요.<br>브라우저의 카메라 권한을 허용하고 새로고침해 주세요.<br>그동안은 이름으로 찾아 출석 처리할 수 있어요.</div>';
+  }
+}
+async function stopCam() { if (S.scanner) { try { await S.scanner.stop(); } catch (e) {} } S.scanner = null; }
+
+function onScan(text) {
+  const code = String(text || '').trim().toUpperCase();
+  const now = Date.now();
+  if (S.busy || !code) return;
+  if (code === S.last && now - S.lastAt < 4000) return;
+  S.last = code; S.lastAt = now;
+  checkin(code);
+}
+
+/* USB 바코드 스캐너(키보드처럼 입력 + Enter)도 받기 */
+let kb = '', kbAt = 0;
+document.addEventListener('keydown', e => {
+  if (!S.pin || document.querySelector('.sheet') || (e.target && e.target.tagName === 'INPUT')) return;
+  const now = Date.now();
+  if (now - kbAt > 300) kb = '';
+  kbAt = now;
+  if (e.key === 'Enter') { if (kb.length >= 6) onScan(kb); kb = ''; return; }
+  if (e.key.length === 1) kb += e.key;
+});
+
+/* ── 출석 처리 ── */
+function recView(rec) { return { name: rec.n, guk: rec.g, ddorae: rec.d, days: rec.a.slice() }; }
+
+async function checkin(code) {
+  S.busy = true;
+  const rec = S.roster.get(code);
+
+  // 1) 폰 명단에 있고 회비 확인된 사람: 바로 판정
+  if (rec && rec.p) {
+    if (rec.a[S.day]) return showResult(Object.assign({ status: 'dup', at: rec.a[S.day] }, recView(rec)));
+    const at = hhmm();
+    const stamp = at + (S.desk ? ' (' + S.desk + '번)' : '');
+    rec.a[S.day] = stamp;
+    enqueue({ id: code + '-' + S.day + '-' + Date.now(), code, day: S.day, desk: S.desk, at, stamp, name: rec.n });
+    S.recent.unshift({ name: rec.n, guk: rec.g, ddorae: rec.d, at });
+    return showResult(Object.assign({ status: 'ok', at: stamp }, recView(rec)));
+  }
+
+  // 2) 명단에 없거나 회비 미확인: 시트에 직접 확인 (회계가 방금 체크했을 수 있음)
+  showChecking();
+  try {
+    const r = await api('checkin', { code, day: S.day, desk: S.desk, at: hhmm() }, 12000);
+    S.online = true;
+    if (r.status === 'ok' || r.status === 'dup' || r.status === 'unpaid') {
+      const rr = S.roster.get(code) || { c: code, l: '', a: S.days.map(() => '') };
+      rr.n = r.name; rr.g = r.guk; rr.d = r.ddorae; rr.p = r.paid ? 1 : 0; rr.a = (r.days || rr.a).slice();
+      S.roster.set(code, rr);
+      if (r.status === 'ok') S.recent.unshift({ name: r.name, guk: r.guk, ddorae: r.ddorae, at: String(r.at || '').slice(0, 5) });
+    }
+    showResult(r);
+  } catch (e) {
+    S.online = false;
+    if (rec) showResult(Object.assign({ status: 'unpaid', offline: true }, recView(rec)));
+    else showResult({ status: 'notfound', offline: true });
+  }
+  paintSync();
+}
+
+function showChecking() {
+  const o = document.createElement('div');
+  o.className = 'overlay none'; o.id = 'checking';
+  o.innerHTML = '<div class="t">시트에서 확인하는 중…</div><div class="m">폰에 받아 둔 명단에 없거나 회비 확인 전으로 나와서 한 번 더 확인해요.</div>';
+  document.body.appendChild(o);
+}
+
+function dotsHtml(r) {
+  return '<div class="dots">' + S.days.map((d, i) => `<div><i class="${r.days && r.days[i] ? 'y' : ''}">${r.days && r.days[i] ? '✓' : ''}</i>${esc(d)}</div>`).join('') + '</div>';
+}
+
+function showResult(r) {
+  const prev = document.getElementById('checking'); if (prev) prev.remove();
+  const o = document.createElement('div');
+  let cls = 'none', html = '', auto = 0;
+  if (r.status === 'ok') {
+    cls = 'ok'; auto = 1500; beep('ok');
+    html = `<div class="t">${S.day + 1}일차 출석 완료</div><div class="big">${esc(r.name)}</div><div class="s">${esc(r.guk)} · ${esc(r.ddorae)}</div><div class="m">${esc(r.at)}</div>${dotsHtml(r)}<button>바로 다음 사람</button>`;
+  } else if (r.status === 'dup') {
+    cls = 'dup'; beep('dup');
+    html = `<div class="t">이 날 이미 출석한 QR이에요</div><div class="big">${esc(r.name)}</div><div class="s">${esc(r.guk)} · ${esc(r.ddorae)}</div><div class="m">${esc(S.days[S.day])} ${esc(r.at)}에 출석 처리됨<br>같은 QR을 다른 사람이 쓰는 건 아닌지 확인해 주세요</div><button>확인했어요 · 다음</button>`;
+  } else if (r.status === 'unpaid') {
+    cls = 'bad'; beep('bad');
+    html = `<div class="t">회비 확인 전이에요</div><div class="big">${esc(r.name)}</div><div class="s">${esc(r.guk)} · ${esc(r.ddorae)}</div><div class="m">${r.offline ? '(인터넷이 불안정해 시트를 다시 확인하지 못했어요)<br>' : ''}입구에서 처리하지 말고 운영 데스크로 안내해 주세요.</div><button>확인</button>`;
+  } else if (r.status === 'notfound') {
+    cls = 'bad'; beep('bad');
+    html = `<div class="t">등록되지 않은 QR이에요</div><div class="m">${r.offline ? '인터넷이 불안정해 시트를 확인하지 못했어요. 잠시 뒤 다시 찍거나 이름으로 찾아 보세요.' : '수양회 QR이 맞는지 확인하고, 이름으로 찾아 보세요.'}</div><button>확인</button>`;
+  } else if (r.status === 'noday') {
+    html = `<div class="t">출석 날짜가 아니에요</div><div class="m">위쪽에서 날짜를 골라 주세요.</div><button>확인</button>`;
+  } else if (r.status === 'denied') {
+    html = `<div class="t">비밀번호가 바뀌었어요</div><div class="m">다시 로그인해 주세요.</div><button>확인</button>`;
+  } else {
+    html = `<div class="t">처리하지 못했어요</div><div class="m">${esc(r.message || '잠시 뒤 다시 찍어 주세요.')}</div><button>확인</button>`;
+  }
+  o.className = 'overlay ' + cls;
+  o.innerHTML = html;
+  const close = () => {
+    if (!o.isConnected) return;
+    o.remove(); S.busy = false;
+    const rc = document.getElementById('recent'); if (rc) rc.innerHTML = recentHtml();
+    paintCounts(); paintSync();
+    if (r.status === 'denied') logout();
+  };
+  o.querySelector('button').onclick = close;
+  document.body.appendChild(o);
+  if (auto) setTimeout(close, auto);
+}
+
+/* ── 이름으로 찾기 (폰 명단에서 바로 검색) ── */
+function openSearch() {
+  const sh = document.createElement('div');
+  sh.className = 'sheet';
+  sh.innerHTML = `
+    <header><button aria-label="닫기" id="x"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#141B24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></button>
+      <h2>이름으로 찾기</h2><span style="font-size:13px;font-weight:700;color:#4A5563;padding-right:12px">${S.day + 1}일차 ${esc(S.days[S.day])}</span></header>
+    <input id="q" type="search" placeholder="이름 또는 휴대폰 뒷자리 4자리" autocomplete="off">
+    <div class="list" id="res"></div>`;
+  document.body.appendChild(sh);
+  const q = sh.querySelector('#q'), res = sh.querySelector('#res');
+  sh.querySelector('#x').onclick = () => sh.remove();
+  const run = () => {
+    const v = q.value.trim().replace(/\s+/g, '');
+    if (!v) { res.innerHTML = ''; return; }
+    const hits = [...S.roster.values()].filter(r => /^\d{4}$/.test(v) ? r.l === v : r.n.replace(/\s+/g, '').indexOf(v) >= 0).slice(0, 40);
+    if (!hits.length) { res.innerHTML = '<div style="color:#4A5563;font-size:14px;line-height:1.6">명단에 없어요. 방금 등록한 사람이라면 잠시 뒤 다시 찾아 보고, 그래도 없으면 운영 데스크로 안내해 주세요.</div>'; return; }
+    res.innerHTML = hits.map(r => {
+      const done = r.a[S.day];
+      const right = !r.p ? `<button data-c="${esc(r.c)}" style="background:#8A4B00">회비 다시 확인</button>`
+        : done ? `<span class="pill g">${esc(done.slice(0, 5))} 출석</span>`
+        : `<button data-c="${esc(r.c)}">출석 처리</button>`;
+      return `<div class="item"><div><b>${esc(r.n)}</b><span>${esc(r.g)} · ${esc(r.d)} · 뒷자리 ${esc(r.l)}</span></div>${right}</div>`;
+    }).join('');
+    res.querySelectorAll('button[data-c]').forEach(b => { b.onclick = () => { sh.remove(); checkin(b.dataset.c); }; });
+  };
+  q.oninput = run;
+  q.focus();
+}
+
+/* ── 시작 ── */
+(async function init() {
+  demoBanner('미리보기 모드 · 비밀번호 0000 · QR 대신 이름으로 찾기로 눌러 보세요');
+  S.queue = ls(K.queue) || [];
+  const cached = ls(K.roster);
+  if (cached && cached.list) setRoster(cached.list);
+
+  setInterval(flush, 2000);
+  setInterval(() => { if (S.pin && !S.busy && !document.querySelector('.sheet')) loadRoster(); }, 60000);
+  window.addEventListener('online', () => { flush(); loadRoster(); });
+  window.addEventListener('beforeunload', e => { if (S.queue.length) { e.preventDefault(); e.returnValue = ''; } });
+
+  const saved = ls(K.login) || {};
+  if (saved.pin) {
+    S.pin = saved.pin; S.desk = saved.desk || '';
+    try {
+      const r = await api('staffLogin', {});
+      if (r.status === 'ok') {
+        S.days = r.days; S.today = r.today; S.day = r.today >= 0 ? r.today : 0;
+        await loadRoster();
+        return mainView();
+      }
+    } catch (e) {
+      // 인터넷이 없어도 받아 둔 명단이 있으면 그대로 시작
+      if (S.roster.size && cached && cached.days) {
+        S.online = false;
+        S.days = cached.days; S.today = localToday(); S.day = S.today >= 0 ? S.today : 0;
+        return mainView();
+      }
+    }
+  }
+  loginView();
+})();
+</script>
+</body>
+</html>
