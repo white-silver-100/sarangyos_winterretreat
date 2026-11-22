@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="robots" content="noindex">
-<title>수양회 출석 체크 (스태프)</title>
+<title>겨울사경회 출석 체크 (스태프)</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;800&display=swap">
 <script src="https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
@@ -430,7 +430,7 @@ function showResult(r) {
     html = `<div class="t">회비 확인 전이에요</div><div class="big">${esc(r.name)}</div><div class="s">${esc(r.guk)} · ${esc(r.ddorae)}</div><div class="m">${r.offline ? '(인터넷이 불안정해 시트를 다시 확인하지 못했어요)<br>' : ''}입구에서 처리하지 말고 운영 데스크로 안내해 주세요.</div><button>확인</button>`;
   } else if (r.status === 'notfound') {
     cls = 'bad'; beep('bad');
-    html = `<div class="t">등록되지 않은 QR이에요</div><div class="m">${r.offline ? '인터넷이 불안정해 시트를 확인하지 못했어요. 잠시 뒤 다시 찍거나 이름으로 찾아 보세요.' : '수양회 QR이 맞는지 확인하고, 이름으로 찾아 보세요.'}</div><button>확인</button>`;
+    html = `<div class="t">등록되지 않은 QR이에요</div><div class="m">${r.offline ? '인터넷이 불안정해 시트를 확인하지 못했어요. 잠시 뒤 다시 찍거나 이름으로 찾아 보세요.' : '사경회 QR이 맞는지 확인하고, 이름으로 찾아 보세요.'}</div><button>확인</button>`;
   } else if (r.status === 'noday') {
     html = `<div class="t">출석 날짜가 아니에요</div><div class="m">위쪽에서 날짜를 골라 주세요.</div><button>확인</button>`;
   } else if (r.status === 'denied') {

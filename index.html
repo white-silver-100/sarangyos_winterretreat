@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>청년부 수양회</title>
+<title>사랑의교회 청년부 2027 겨울사경회</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;800&display=swap">
 <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
@@ -91,8 +91,8 @@ async function demoApi(action, d) {
   await new Promise(r => setTimeout(r, 250));
   const db = demoLoad();
   const days = ['1/4', '1/5', '1/6'];
-  const cfg = { status: 'ok', title: '청년부 수양회', dateText: '2027. 1. 4 (월) – 1. 6 (수)', guks: ['1국', '2국', '3국', '4국', '5국', 'BSC'],
-    ddorae: ['99또래', '00또래', '01또래'], days: days, today: -1, regOpen: true };
+  const cfg = { status: 'ok', title: '사랑의교회 청년부 2027 겨울사경회', dateText: '2027. 1. 4 (월) – 1. 6 (수)', guks: ['1국', '2국', '3국', '4국', '5국', 'BSC'],
+    ddorae: ['75또래', '76또래', '77또래', '78또래', '79또래', '80또래', '81또래', '82또래', '83또래', '84또래', '85또래', '86또래', '87또래', '88또래', '89또래', '90또래', '91또래', '92또래', '93또래', '94또래', '95또래', '96또래', '97또래', '98또래', '99또래', '00또래', '01또래', '02또래', '03또래', '04또래', '05또래', '06또래', '07또래', '08또래', '09또래', '10또래'], days: days, today: -1, regOpen: true };
   const acct = g => ({ bank: '[은행]', account: '[' + g + ' 계좌번호]', holder: '[' + g + ' 회계]' });
   const nm = s => String(s || '').replace(/\s+/g, ''), dg = s => String(s || '').replace(/\D/g, '');
   const pub = r => ({ name: r.name, guk: r.guk, ddorae: r.ddorae, paid: r.paid, days: r.days.slice() });
@@ -186,14 +186,14 @@ function home() {
     <div class="hero"><small>${esc(CFG.title)}</small><h1>${esc(CFG.dateText)}</h1></div>
     <div style="padding:20px 16px 0;display:flex;flex-direction:column;gap:12px">
       <button class="tile" onclick="go('register')" ${CFG.regOpen ? '' : 'disabled'}>
-        <div><b>수양회 등록</b><span>${CFG.regOpen ? '국 · 또래 · 이름 · 리더 · 연락처' : '등록이 마감됐어요'}</span></div>${ICON_NEXT}</button>
+        <div><b>사경회 등록</b><span>${CFG.regOpen ? '국 · 또래 · 이름 · 리더 · 연락처' : '등록이 마감됐어요'}</span></div>${ICON_NEXT}</button>
       <button class="tile" onclick="go('lookup')">
         <div><b>내 QR 받기</b><span>회계가 회비를 확인한 뒤에 열려요</span></div>${ICON_NEXT}</button>
       ${saved ? `<button class="tile" onclick="showSaved()"><div><b>저장된 내 QR</b><span>${esc(saved.name)} · ${esc(saved.guk)}</span></div>${ICON_NEXT}</button>` : ''}
     </div>
     <div class="card" style="margin-top:20px">
       <div class="steps">
-        <div class="step"><i>1</i><div><b>수양회 등록</b><span>이 페이지에서 직접</span></div></div>
+        <div class="step"><i>1</i><div><b>사경회 등록</b><span>이 페이지에서 직접</span></div></div>
         <div class="step"><i>2</i><div><b>회비 입금</b><span>등록 후 안내되는 국 계좌로, 안내된 기한까지</span></div></div>
         <div class="step"><i>3</i><div><b>국 회계 확인</b><span>확인되면 QR이 열려요</span></div></div>
         <div class="step"><i>4</i><div><b>내 QR 받기</b><span>이름과 휴대폰 뒷자리로 다운로드</span></div></div>
@@ -207,17 +207,17 @@ function home() {
 function register() {
   const opt = arr => arr.map(x => `<option>${esc(x)}</option>`).join('');
   app.innerHTML = `${topBar('home')}
-    <div class="head"><h1>수양회 등록</h1><p>등록하면 회비 금액과 입금 계좌를 안내해 드려요.</p></div>
+    <div class="head"><h1>사경회 등록</h1><p>등록하면 회비 금액과 입금 계좌를 안내해 드려요.</p></div>
     <form class="card" id="f" onsubmit="return false">
       <div class="row2">
         <label class="f">국<select name="guk" required><option value="">선택</option>${opt(CFG.guks)}</select></label>
         <label class="f">또래<select name="ddorae" required><option value="">선택</option>${opt(CFG.ddorae)}</select></label>
       </div>
       <label class="f">이름<input type="text" name="name" autocomplete="name" required></label>
-      <label class="f">리더 이름<input type="text" name="leader" required></label>
+      <label class="f">리더 이름 <span class="hint" style="display:inline">(리더일 경우 엘더 이름)</span><input type="text" name="leader" required></label>
       <label class="f">연락처<input type="tel" name="phone" inputmode="numeric" placeholder="010-0000-0000" autocomplete="tel" required>
         <span class="hint">QR을 받을 때 뒷자리 4자리로 본인 확인을 해요.</span></label>
-      <label class="agree"><input type="checkbox" name="agree"><span>입력한 정보를 수양회 접수·회비 확인·출석 체크에만 쓰는 데 동의합니다.</span></label>
+      <label class="agree"><input type="checkbox" name="agree"><span>입력한 정보를 사경회 접수·회비 확인·출석 체크에만 쓰는 데 동의합니다.</span></label>
     </form>
     <div class="err" id="e" hidden></div>
     <div class="foot"><button class="btn" id="b" onclick="submitReg()">등록하기</button></div>`;
@@ -353,7 +353,7 @@ function notfound() {
       <b style="font-size:14px">이렇게 확인해 보세요</b>
       <div class="muted">1. 이름에 띄어쓰기나 오타가 없는지</div>
       <div class="muted">2. 등록할 때 쓴 번호와 같은 번호인지</div>
-      <div class="muted">3. 그래도 없으면 아직 등록 전이에요. ${CFG.regOpen ? '<a href="#register" onclick="go(\'register\');return false">수양회 등록</a>부터 해 주세요.' : '소속 국 회계에게 문의해 주세요.'}</div>
+      <div class="muted">3. 그래도 없으면 아직 등록 전이에요. ${CFG.regOpen ? '<a href="#register" onclick="go(\'register\');return false">사경회 등록</a>부터 해 주세요.' : '소속 국 회계에게 문의해 주세요.'}</div>
     </div>
     <div class="foot"><button class="btn" onclick="go('lookup')">다시 입력하기</button></div>`;
 }
@@ -392,7 +392,7 @@ async function showQR(r) {
   saveLocal(r);
   app.innerHTML = '<div class="loading">QR 만드는 중…</div>';
   const url = await makeCard(r);
-  const file = '수양회QR_' + r.name + '.png';
+  const file = '사경회QR_' + r.name + '.png';
   app.innerHTML = `
     <div class="qrwrap">
       <h1>입장 QR이 준비됐어요</h1>
