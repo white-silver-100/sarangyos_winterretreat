@@ -4,6 +4,10 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>사랑의교회 청년부 2027 겨울사경회</title>
+<meta name="description" content="2027. 1. 3 (주일) – 1. 6 (수) · 사경회 등록과 내 입장 QR 받기">
+<meta property="og:type" content="website">
+<meta property="og:title" content="사랑의교회 청년부 2027 겨울사경회">
+<meta property="og:description" content="2027. 1. 3 (주일) – 1. 6 (수) · 사경회 등록과 내 입장 QR 받기">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;800&display=swap">
 <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
@@ -81,17 +85,17 @@ const DEMO_KEY = 'retreat-demo-db';
 function demoLoad() {
   try { const d = JSON.parse(localStorage.getItem(DEMO_KEY) || 'null'); if (d && d.rows) return d; } catch (e) {}
   return { rows: [
-    { guk: '3국', ddorae: '01또래', name: '김은혜', leader: '박지훈', phone: '01012342847', tier: '1차', amount: 40000, due: '2026-12-14', paid: true, code: 'K7P2X9QM', days: ['', '', ''] },
-    { guk: '3국', ddorae: '00또래', name: '박하늘', leader: '박지훈', phone: '01055125512', tier: '1차', amount: 40000, due: '2026-12-14', paid: false, code: 'M3QA8TZD', days: ['', '', ''] },
-    { guk: '1국', ddorae: '99또래', name: '이수아', leader: '조민재', phone: '01077207720', tier: '1차', amount: 40000, due: '2026-12-14', paid: true, code: 'B8LD4RYS', days: ['', '', ''] },
+    { guk: '3국', ddorae: '01또래', name: '김은혜', leader: '박지훈', phone: '01012342847', tier: '1차', amount: 40000, due: '2026-12-14', paid: true, code: 'K7P2X9QM', days: ['', '', '', ''] },
+    { guk: '3국', ddorae: '00또래', name: '박하늘', leader: '박지훈', phone: '01055125512', tier: '1차', amount: 40000, due: '2026-12-14', paid: false, code: 'M3QA8TZD', days: ['', '', '', ''] },
+    { guk: '1국', ddorae: '99또래', name: '이수아', leader: '조민재', phone: '01077207720', tier: '1차', amount: 40000, due: '2026-12-14', paid: true, code: 'B8LD4RYS', days: ['', '', '', ''] },
   ] };
 }
 function demoSave(db) { try { localStorage.setItem(DEMO_KEY, JSON.stringify(db)); } catch (e) {} }
 async function demoApi(action, d) {
   await new Promise(r => setTimeout(r, 250));
   const db = demoLoad();
-  const days = ['1/4', '1/5', '1/6'];
-  const cfg = { status: 'ok', title: '사랑의교회 청년부 2027 겨울사경회', dateText: '2027. 1. 4 (월) – 1. 6 (수)', guks: ['1국', '2국', '3국', '4국', '5국', 'BSC'],
+  const days = ['1/3', '1/4', '1/5', '1/6'];
+  const cfg = { status: 'ok', title: '사랑의교회 청년부 2027 겨울사경회', dateText: '2027. 1. 3 (주일) – 1. 6 (수)', guks: ['1국', '2국', '3국', '4국', '5국', 'BSC'],
     ddorae: ['75또래', '76또래', '77또래', '78또래', '79또래', '80또래', '81또래', '82또래', '83또래', '84또래', '85또래', '86또래', '87또래', '88또래', '89또래', '90또래', '91또래', '92또래', '93또래', '94또래', '95또래', '96또래', '97또래', '98또래', '99또래', '00또래', '01또래', '02또래', '03또래', '04또래', '05또래', '06또래', '07또래', '08또래', '09또래', '10또래'], days: days, today: -1, regOpen: true };
   const acct = g => ({ bank: '[은행]', account: '[' + g + ' 계좌번호]', holder: '[' + g + ' 회계]' });
   const nm = s => String(s || '').replace(/\s+/g, ''), dg = s => String(s || '').replace(/\D/g, '');
@@ -106,7 +110,7 @@ async function demoApi(action, d) {
     const dup = db.rows.find(r => r.phone === ph && nm(r.name) === nm(d.name));
     if (dup) return { status: 'exists', ...pub(dup), tier: dup.tier, amount: dup.amount, due: dup.due, ...acct(dup.guk) };
     const S = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; let code = ''; for (let i = 0; i < 8; i++) code += S[Math.floor(Math.random() * S.length)];
-    const r = { guk: d.guk, ddorae: d.ddorae, name: String(d.name).trim(), leader: d.leader, phone: ph, tier: '1차', amount: 40000, due: '2026-12-14', paid: false, code: code, days: ['', '', ''] };
+    const r = { guk: d.guk, ddorae: d.ddorae, name: String(d.name).trim(), leader: d.leader, phone: ph, tier: '1차', amount: 40000, due: '2026-12-14', paid: false, code: code, days: ['', '', '', ''] };
     db.rows.push(r); demoSave(db);
     return { status: 'ok', guk: r.guk, name: r.name, ddorae: r.ddorae, tier: r.tier, amount: r.amount, due: r.due, ...acct(r.guk) };
   }
@@ -214,7 +218,7 @@ function register() {
         <label class="f">또래<select name="ddorae" required><option value="">선택</option>${opt(CFG.ddorae)}</select></label>
       </div>
       <label class="f">이름<input type="text" name="name" autocomplete="name" required></label>
-      <label class="f">리더 이름 <span class="hint" style="display:inline">(리더일 경우 엘더 이름)</span><input type="text" name="leader" required></label>
+      <label class="f">리더 이름 <span class="hint" style="display:inline">(리더일 경우 본인 이름)</span><input type="text" name="leader" required></label>
       <label class="f">연락처<input type="tel" name="phone" inputmode="numeric" placeholder="010-0000-0000" autocomplete="tel" required>
         <span class="hint">QR을 받을 때 뒷자리 4자리로 본인 확인을 해요.</span></label>
       <label class="agree"><input type="checkbox" name="agree"><span>입력한 정보를 사경회 접수·회비 확인·출석 체크에만 쓰는 데 동의합니다.</span></label>
@@ -396,7 +400,7 @@ async function showQR(r) {
   app.innerHTML = `
     <div class="qrwrap">
       <h1>입장 QR이 준비됐어요</h1>
-      <p>${esc(CFG.days.join(' · '))} 사흘 동안 이 QR 하나로 출석 체크해요.</p>
+      <p>${esc(CFG.days.join(' · '))} 기간 동안 이 QR 하나로 매일 출석 체크해요.</p>
       <img src="${url}" alt="${esc(r.name)} 입장 QR">
       <a class="btn" href="${url}" download="${esc(file)}">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#141B24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11"/><path d="M7 10.5l5 5 5-5"/><path d="M5 20h14"/></svg>QR 이미지 저장</a>

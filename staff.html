@@ -104,15 +104,15 @@ const DEMO_KEY = 'retreat-demo-db';
 function demoLoad() {
   try { const d = JSON.parse(localStorage.getItem(DEMO_KEY) || 'null'); if (d && d.rows) return d; } catch (e) {}
   return { rows: [
-    { guk: '3국', ddorae: '01또래', name: '김은혜', leader: '박지훈', phone: '01012342847', tier: '1차', amount: 40000, due: '2026-12-14', paid: true, code: 'K7P2X9QM', days: ['', '', ''] },
-    { guk: '3국', ddorae: '00또래', name: '박하늘', leader: '박지훈', phone: '01055125512', tier: '1차', amount: 40000, due: '2026-12-14', paid: false, code: 'M3QA8TZD', days: ['', '', ''] },
-    { guk: '1국', ddorae: '99또래', name: '이수아', leader: '조민재', phone: '01077207720', tier: '1차', amount: 40000, due: '2026-12-14', paid: true, code: 'B8LD4RYS', days: ['', '', ''] },
+    { guk: '3국', ddorae: '01또래', name: '김은혜', leader: '박지훈', phone: '01012342847', tier: '1차', amount: 40000, due: '2026-12-14', paid: true, code: 'K7P2X9QM', days: ['', '', '', ''] },
+    { guk: '3국', ddorae: '00또래', name: '박하늘', leader: '박지훈', phone: '01055125512', tier: '1차', amount: 40000, due: '2026-12-14', paid: false, code: 'M3QA8TZD', days: ['', '', '', ''] },
+    { guk: '1국', ddorae: '99또래', name: '이수아', leader: '조민재', phone: '01077207720', tier: '1차', amount: 40000, due: '2026-12-14', paid: true, code: 'B8LD4RYS', days: ['', '', '', ''] },
   ] };
 }
 function demoSave(db) { try { localStorage.setItem(DEMO_KEY, JSON.stringify(db)); } catch (e) {} }
 async function demoApi(action, d) {
   await new Promise(r => setTimeout(r, 300));
-  const db = demoLoad(), days = ['1/4', '1/5', '1/6'];
+  const db = demoLoad(), days = ['1/3', '1/4', '1/5', '1/6'];
   d = d || {};
   if (String(d.pin || '') !== '0000') return { status: 'denied' };
   const pub = r => ({ name: r.name, guk: r.guk, ddorae: r.ddorae, paid: r.paid, days: r.days.slice() });
